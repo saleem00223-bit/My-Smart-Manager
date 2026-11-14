@@ -39,9 +39,17 @@ jobs:
           cp starter/my_smart_manager/lib/main.dart app/lib/main.dart
           cp starter/my_smart_manager/pubspec.yaml app/pubspec.yaml
           cp starter/my_smart_manager/android/app/src/main/AndroidManifest.xml app/android/app/src/main/AndroidManifest.xml
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/' app/android/app/build.gradle
-          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/' app/android/app/build.gradle.kts
-          sed -i 's/FlutterActivity/FlutterFragmentActivity/' app/android/app/src/main/kotlin/com/mysmartmanager/app/MainActivity.kt
+
+          if [ -f app/android/app/build.gradle.kts ]; then
+            sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/' app/android/app/build.gradle.kts
+          elif [ -f app/android/app/build.gradle ]; then
+            sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/' app/android/app/build.gradle
+          fi
+
+          MAIN_ACTIVITY=$(find app/android/app/src/main -name MainActivity.kt -print -quit)
+          if [ -n "$MAIN_ACTIVITY" ]; then
+            sed -i 's/FlutterActivity/FlutterFragmentActivity/' "$MAIN_ACTIVITY"
+          fi
 
       - name: Build APK
         run: |
@@ -54,3 +62,4 @@ jobs:
         with:
           name: My-Smart-Manager-APK
           path: app/build/app/outputs/flutter-apk/app-release.apk
+          
